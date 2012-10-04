@@ -14,3 +14,5 @@ Use
     parseXlsx('Spreadsheet.xlsx', function(data) {
         // data is an array of arrays
     });
+    
+MIT License.
