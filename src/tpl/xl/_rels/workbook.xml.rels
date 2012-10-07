@@ -1,0 +1,9 @@
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<? var w, ww = $.worksheets.length; ?>
+<? for (w = 1; w <= ww; ++w) { ?>
+	<Relationship Id="rId<?- w ?>" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet<?- w ?>.xml"/>
+<? } ?>
+	<Relationship Id="rId<?- (ww + 1) ?>" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>
+	<Relationship Id="rId<?- (ww + 2) ?>" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+	<Relationship Id="rId<?- (ww + 3) ?>" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
+</Relationships>

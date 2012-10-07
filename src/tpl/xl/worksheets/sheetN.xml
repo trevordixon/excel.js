@@ -1,0 +1,61 @@
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">
+	<dimension ref="A1:<?= $.alphabet($.cols.length-1, $.rows.length-1) ?>"/>
+	<sheetViews>
+		<sheetView<?- ($.index === $.workbook.activeTab ? ' tabSelected="1"' : '') ?> workbookViewId="0"<??>
+<?
+		if ($.selection) {
+?>>
+			<selection activeCell="<?= $.alphabet($.selection.start.col, $.selection.start.row) ?>" sqref="<?= $.alphabet($.selection.end.col, $.selection.end.row) ?>"/>
+		</sheetView>
+<?
+		} else { ?>/><? }
+?>
+	</sheetViews>
+	<sheetFormatPr defaultRowHeight="15" x14ac:dyDescent="0.25"/>
+	<cols>
+<?
+	var r, rr = $.rows.length, c, cc = $.cols.length;
+	for (c = 0; c < cc; ++c) {
+		if ($.cols[c].width) {
+?>
+		<col min="<?- (c + 1) ?>" max="<?- (c + 1) ?>" width="<?= $.cols[c].width ?>" customWidth="1"/>
+<?
+		}
+	}
+?>
+	</cols>
+	<sheetData>
+<?
+	var cell, val, type;
+	for (r = 0; r < rr; ++r) {
+		cc = $.rows[r].length;
+?>
+		<row r="<?- (r + 1) ?>" spans="1:<?- cc ?>" x14ac:dyDescent="0.25">
+<?
+		for (c = 0; c < cc; ++c) {
+			cell = val = $.rows[r][c];
+			type = '';
+			if (!$.isNumeric(cell)) {
+				$.sharedStrings.total += 1;
+				if (!$.sharedStrings.map[cell]) {
+					val = ($.sharedStrings.map[cell] = $.sharedStrings.push(cell)) - 1;
+				}
+				type = ' t="s"';
+			}
+?>
+			<c r="<?= $.alphabet(c, r) ?>"<?- type ?>><v><?= val ?></v></c>
+<?
+		}
+?>
+		</row>
+<?
+	}
+?>
+	</sheetData>
+	<pageMargins left="<?= $.margin.left ?>" right="<?= $.margin.right
+			?>" top="<?= $.margin.top ?>" bottom="<?= $.margin.bottom
+			?>" header="<?= $.margin.header ?>" footer="<?= $.margin.footer ?>"/>
+<? if ($.table) { ?>
+	<tableParts count="1"><tablePart r:id="rId1"/></tableParts>
+<? } ?>
+</worksheet>
