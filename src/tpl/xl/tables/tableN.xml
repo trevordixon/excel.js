@@ -1,4 +1,4 @@
-<table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="<?= $.index+1 ?>" name="Table<?= $.index+1 ?>" displayName="Table<?= $.index+1
+<table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="<?= $.index ?>" name="Table<?= $.index ?>" displayName="Table<?= $.index
 		?>" ref="A1:<?= $.alphabet($.cols.length, $.rows.length) ?>" totalsRowShown="0">
 	<autoFilter ref="A1:'<?= $.alphabet($.cols.length-1, $.rows.length-1) ?>"/>
 	<tableColumns count="<?= $.cols.length ?>">
