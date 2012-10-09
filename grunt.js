@@ -50,13 +50,13 @@ module.exports = function(grunt) {
 		concat: {
 			dist: {
 				src: [ '<banner:meta.banner>', '<banner:meta.start>', 'src/**/*.js', '<banner:meta.stop>' ],
-				dest: 'sheetcake.js'
+				dest: '<%= pkg.name %>.js'
 			}
 		},
 		min: {
 			dist: {
 				src: [ '<banner:meta.banner>', '<config:concat.dist.dest>' ],
-				dest: 'sheetcake.min.js'
+				dest: '<%= pkg.name %>.min.js'
 			}
 		},
 		test: {
@@ -92,7 +92,6 @@ module.exports = function(grunt) {
 	grunt.registerTask('default', 'clean lint test tpl concat min');
 
 	grunt.registerMultiTask('tpl', 'Package all of the templates into js functions', function() {
-		grunt.log.write('Compiling templates...');
 		var files = grunt.file.expandFiles(this.file.src),
 			tpls = {}, stencil = require('stencil-js');
 		stencil.defaults.noevents = true;
@@ -105,8 +104,8 @@ module.exports = function(grunt) {
 		for (k in tpls) { content += '\t' + JSON.stringify(k) + ': ' + tpls[k] + ',\n'; }
 		content = content.replace(/,\n$/, '\n');
 		content += '\n};\n';
-		grunt.file.write(this.data.dest, content);
-		grunt.log.writeln('done.');
+		grunt.file.write(this.file.dest, content);
+		grunt.log.writeln('File "' + this.file.dest + '" created.');
 	});
 
 	grunt.registerMultiTask('clean', 'Remove build files', function() {

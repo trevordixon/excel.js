@@ -1,7 +1,7 @@
 {
-  "name": "excel",
-  "version": "0.0.0",
-  "description": "Native node.js Excel file parser. Only supports xlsx for now.",
+  "name": "sheetcake",
+  "version": "0.0.1",
+  "description": "Web and node.js spreadsheet library. Supports xlsx, csv, tsv (or any simple delimited file) for now.",
   "main": "excelParser.js",
   "dependencies": {
     "node-promise": "~0.5.3",
