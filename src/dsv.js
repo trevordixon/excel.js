@@ -7,7 +7,7 @@
 var DSV = {
 	parse: function(dsv, reviver, field, record) {
 		field = field || '\t'; record = record || '\n';
-		reviver = reviver || function(r, c, v) { return v; }
+		reviver = reviver || function(r, c, v) { return v; };
 		var table = dsv.replace(/\r?\n|\r/g, '\n').split(record),
 			r, rr = table.length, c, cc;
 		for (r = 0; r < rr; ++r) {

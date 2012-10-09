@@ -1,9 +1,6 @@
 /**
  * Model for an excel workbook
  **/
-(function() {
-"use strict";
-
 function WorkBook() {
 }
 
@@ -15,7 +12,3 @@ WorkBook.prototype = {
 	created: new Date(),
 	modified: new Date()
 };
-
-return WorkBook;
-
-}());

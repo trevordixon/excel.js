@@ -10,7 +10,8 @@
     "unzip": "~0.0.3"
   },
   "devDependencies": {
-    "stencil": ">= 0.8.3"
+    "stencil-js": ">= 0.8.4",
+    "grunt": ">= 0.3.16"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,5 @@
     "xlsx"
   ],
   "author": "Trevor Dixon <trevordixon@gmail.com>",
-  "license": "BSD"
+  "license": "MIT"
 }
