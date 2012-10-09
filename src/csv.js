@@ -26,7 +26,8 @@ var CSV = {
 				} else {
 					while (c < cc && '\r' !== chars[c] && '\n' !== chars[c] && ',' !== chars[c]) { end = ++c; }
 				}
-				row.push(reviver(table.length-1, row.length, chars.slice(start, end).join('')));
+				end = reviver(table.length-1, row.length, chars.slice(start, end).join(''));
+				row.push(isNaN(end) ? end : +end);
 				if (',' === chars[c]) { ++c; }
 			}
 			if ('\r' === chars[c]) { ++c; }

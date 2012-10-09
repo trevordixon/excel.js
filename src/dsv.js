@@ -14,6 +14,7 @@ var DSV = {
 			table[r] = table[r].split(field);
 			for (c = 0, cc = table[r].length; c < cc; ++c) {
 				table[r][c] = reviver(r, c, table[r][c]);
+				if (!isNaN(table[r][c])) { table[r][c] = +table[r][c]; }
 			}
 		}
 		return table;
