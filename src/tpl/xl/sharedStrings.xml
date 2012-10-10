@@ -1,0 +1,5 @@
+<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="<?- $.sharedStrings.total ?>" uniqueCount="<?- $.sharedStrings.length ?>">
+<? for (var s=0, ss=$.sharedStrings.length; s < ss; ++s) { ?>
+	<si><t><?= $.sharedStrings[s] ?></t></si>
+<? } ?>
+</sst>
