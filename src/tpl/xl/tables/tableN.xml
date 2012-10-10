@@ -1,0 +1,10 @@
+<table xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" id="<?= $.index ?>" name="Table<?= $.index ?>" displayName="Table<?= $.index
+		?>" ref="A1:<?= $.alphabet($.cols.length, $.rows.length) ?>" totalsRowShown="0">
+	<autoFilter ref="A1:'<?= $.alphabet($.cols.length-1, $.rows.length-1) ?>"/>
+	<tableColumns count="<?= $.cols.length ?>">
+<? for (var c=0, cc=$.cols.length; c < cc; ++c) { ?>
+		<tableColumn id="<?= (c + 1) ?>" name="<?= $.cols[c].name ?>"/>
+<? } ?>
+	</tableColumns>
+	<tableStyleInfo name="TableStyleMedium2" showFirstColumn="0" showLastColumn="0" showRowStripes="1" showColumnStripes="0"/>
+</table>

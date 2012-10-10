@@ -1,0 +1,15 @@
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+	<fileVersion appName="xl" lastEdited="5" lowestEdited="5" rupBuild="9303"/>
+	<workbookPr defaultThemeVersion="124226"/>
+	<bookViews>
+		<workbookView<?- ($.activeTab ? ' activeTab="' + escape($.activeTab) + '"' : '')
+			?> xWindow="<?= $.window.x ?>" yWindow="<?= $.window.y
+			?>" windowWidth="<?= $.window.width ?>" windowHeight="<?= $.window.height ?>"/>
+	</bookViews>
+	<sheets>
+<? for (var w=1, ww=$.worksheets.length; w <= ww; ++w) { ?>
+		<sheet name="<?= ($.worksheets[w-1].name || 'Sheet' + w) ?>" sheetId="<?- w ?>" r:id="rId<?- w ?>"/>
+<? } ?>
+	</sheets>
+	<calcPr calcId="0"/>
+</workbook>
