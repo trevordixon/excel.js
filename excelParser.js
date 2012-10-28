@@ -79,11 +79,13 @@ function extractData(files) {
 	});
 
 	var cells = sheet.find('//a:sheetData//a:row//a:c', ns),
-		na = {value: function() { return ''; }};
+		na = { value: function() { return ''; },
+           text:  function() { return ''; } };
+
 	_.each(cells, function(_cell) {
 		var r = _cell.attr('r').value(),
 			type = (_cell.attr('t') || na).value(),
-			value = _cell.get('a:v', ns).text(),
+			value = ( _cell.get('a:v', ns) || na ).text(),
 			cell = new Cell(r);
 
 		if (type == 's') value = strings.get('//a:si[' + (parseInt(value) + 1) + ']//a:t', ns).text();
