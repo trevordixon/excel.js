@@ -19,6 +19,9 @@ function extractFiles(path) {
 
 	require('fs').createReadStream(path)
 		.pipe(unzip.Parse())
+		.on('error', function(err) {
+			deferred.reject(err);
+		})
 		.on('entry', function(entry) {
 			if (files[entry.path]) {
 				var contents = '';
@@ -98,6 +101,9 @@ function extractData(files) {
 
 module.exports = function parseXlsx(path, cb) {
 	extractFiles(path).then(function(files) {
-		cb(extractData(files));
+		cb(null, extractData(files));
+	},
+	function(err) {
+		cb(err);
 	});
 };
