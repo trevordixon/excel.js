@@ -18,7 +18,8 @@ Use
     
 MIT License.
 
-Author: Trevor Dixon <trevordixon@gmail.com>
+*Author: Trevor Dixon <trevordixon@gmail.com>*
+
 Contributors: 
 - Jake Scott <scott.iroh@gmail.com>
 - Fabian Tollenaar <fabian@startingpoint.nl> (Just a small contribution, really)
