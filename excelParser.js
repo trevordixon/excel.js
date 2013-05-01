@@ -16,8 +16,12 @@ function extractFiles(path) {
 			deferred: defer()
 		}
 	};
+	
+	var srcStream = path instanceof require('stream') ?
+		path :
+		require('fs').createReadStream(path);
 
-	require('fs').createReadStream(path)
+	srcStream
 		.pipe(unzip.Parse())
 		.on('error', function(err) {
 			deferred.reject(err);
