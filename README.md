@@ -23,3 +23,4 @@ MIT License.
 Contributors: 
 - Jake Scott <scott.iroh@gmail.com>
 - Fabian Tollenaar <fabian@startingpoint.nl> (Just a small contribution, really)
+- amakhrov
