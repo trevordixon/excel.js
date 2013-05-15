@@ -16,6 +16,13 @@ Use
         // data is an array of arrays
     });
     
+If you have multiple sheets in your spreadsheet, 
+
+    parseXlsx('Spreadsheet.xlsx', '2', function(err, data) {
+    	if(err) throw err;
+        // data is an array of arrays
+    });
+    
 MIT License.
 
 *Author: Trevor Dixon <trevordixon@gmail.com>*
