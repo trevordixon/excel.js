@@ -16,6 +16,8 @@ function extractFiles(path) {
 			deferred: defer()
 		}
 	};
+
+    var noop = function () {};
 	
 	var srcStream = path instanceof require('stream') ?
 		path :
@@ -35,7 +37,9 @@ function extractFiles(path) {
 					files[entry.path].contents = contents;
 					files[entry.path].deferred.resolve();
 				});
-			}
+			} else {
+                entry.on('data', noop); // otherwise unzip.Parse() will hang forever on this entry on some xlsx files
+            }
 		});
 
 	when(all(_.pluck(files, 'deferred')), function() {
@@ -43,6 +47,21 @@ function extractFiles(path) {
 	});
 
 	return deferred.promise;
+}
+
+function calculateDimensions (cells) {
+    var comparator = function (a, b) { return a-b; };
+    var allRows = _(cells).map(function (cell) { return cell.row; }).sort(comparator),
+        allCols = _(cells).map(function (cell) { return cell.column; }).sort(comparator),
+        minRow = allRows[0],
+        maxRow = _.last(allRows),
+        minCol = allCols[0],
+        maxCol = _.last(allCols);
+
+    return [
+        {row: minRow, column: minCol},
+        {row: maxRow, column: maxCol}
+    ];
 }
 
 function extractData(files) {
@@ -54,7 +73,7 @@ function extractData(files) {
 
 	var colToInt = function(col) {
 		var letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-		var col = col.trim().split('');
+		col = col.trim().split('');
 		
 		var n = 0;
 
@@ -66,15 +85,38 @@ function extractData(files) {
 		return n;
 	};
 
-	var Cell = function(cell) {
+	var CellCoords = function(cell) {
 		cell = cell.split(/([0-9]+)/);
 		this.row = parseInt(cell[1]);
 		this.column = colToInt(cell[0]);
 	};
 
-	var d = sheet.get('//a:dimension/@ref', ns).value().split(':');
+	var na = { value: function() { return ''; },
+        text:  function() { return ''; } };
 
-	d = _.map(d, function(v) { return new Cell(v); });
+	var Cell = function(cellNode) {
+		var r = cellNode.attr('r').value(),
+			type = (cellNode.attr('t') || na).value(),
+			value = (cellNode.get('a:v', ns) || na ).text(),
+			coords = new CellCoords(r);
+
+		this.column = coords.column;
+		this.row = coords.row;
+		this.value = value;
+		this.type = type;
+	};
+
+	var cellNodes = sheet.find('//a:sheetData//a:row//a:c', ns);
+	var cells = _(cellNodes).map(function (node) {
+		return new Cell(node);
+	});
+
+	var d = sheet.get('//a:dimension/@ref', ns);
+	if (d) {
+		d = _.map(d.value().split(':'), function(v) { return new CellCoords(v); });
+	} else {
+        d = calculateDimensions(cells)
+	}
 
 	var cols = d[1].column - d[0].column + 1,
 		rows = d[1].row - d[0].row + 1;
@@ -85,17 +127,10 @@ function extractData(files) {
 		data.push(_row);
 	});
 
-	var cells = sheet.find('//a:sheetData//a:row//a:c', ns),
-		na = { value: function() { return ''; },
-           text:  function() { return ''; } };
+	_.each(cells, function(cell) {
+		var value = cell.value;
 
-	_.each(cells, function(_cell) {
-		var r = _cell.attr('r').value(),
-			type = (_cell.attr('t') || na).value(),
-			value = ( _cell.get('a:v', ns) || na ).text(),
-			cell = new Cell(r);
-
-		if (type == 's') value = strings.get('//a:si[' + (parseInt(value) + 1) + ']//a:t', ns).text();
+		if (cell.type == 's') value = strings.get('//a:si[' + (parseInt(value) + 1) + ']//a:t', ns).text();
 
 		data[cell.row - d[0].row][cell.column - d[0].column] = value;
 	});
