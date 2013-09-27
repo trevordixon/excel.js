@@ -23,7 +23,9 @@ function extractFiles(path) {
 		path :
 		require('fs').createReadStream(path);
 
-	srcStream
+	srcStream.on('end', function(){
+	            deferred.resolve();
+	        })
 		.pipe(unzip.Parse())
 		.on('error', function(err) {
 			deferred.reject(err);
@@ -65,11 +67,15 @@ function calculateDimensions (cells) {
 }
 
 function extractData(files) {
-	var libxmljs = require('libxmljs'),
-		sheet = libxmljs.parseXml(files['xl/worksheets/sheet1.xml'].contents),
-		strings = libxmljs.parseXml(files['xl/sharedStrings.xml'].contents),
-		ns = {a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'},
-		data = [];
+	try{
+		var libxmljs = require('libxmljs'),
+			sheet = libxmljs.parseXml(files['xl/worksheets/sheet1.xml'].contents),
+			strings = libxmljs.parseXml(files['xl/sharedStrings.xml'].contents),
+			ns = {a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'},
+			data = [];
+	} catch(parseError){
+	   return [];
+    	}
 
 	var colToInt = function(col) {
 		var letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
