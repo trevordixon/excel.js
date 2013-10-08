@@ -112,7 +112,7 @@ function extractData(files) {
 		this.type = type;
 	};
 
-	var cellNodes = sheet.find('//a:sheetData//a:row//a:c', ns);
+	var cellNodes = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns);
 	var cells = _(cellNodes).map(function (node) {
 		return new Cell(node);
 	});
