@@ -1,6 +1,6 @@
 {
   "name": "excel",
-  "version": "0.0.6",
+  "version": "0.0.60",
   "description": "Web and node.js spreadsheet library. Supports xlsx, csv, tsv (or any simple delimited file) for now.",
   "main": "excelParser.js",
   "contributors": [
