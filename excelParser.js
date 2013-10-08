@@ -23,12 +23,13 @@ function extractFiles(path) {
 		path :
 		require('fs').createReadStream(path);
 
-	srcStream.on('end', function(){
-	            deferred.resolve();
-	        })
+	srcStream
 		.pipe(unzip.Parse())
 		.on('error', function(err) {
 			deferred.reject(err);
+		})
+		.on('end', function(){
+			deferred.resolve();
 		})
 		.on('entry', function(entry) {
 			if (files[entry.path]) {
@@ -112,7 +113,7 @@ function extractData(files) {
 		this.type = type;
 	};
 
-	var cellNodes = sheet.find('//a:sheetData//a:row//a:c', ns);
+	var cellNodes = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns);
 	var cells = _(cellNodes).map(function (node) {
 		return new Cell(node);
 	});
