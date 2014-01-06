@@ -138,7 +138,7 @@ function extractData(files) {
 		var value = cell.value;
 
 		if (cell.type == 's') {
-			values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t', ns)
+			values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t[not(ancestor::a:rPh)]', ns)
 			value = "";
 			for (var i = 0; i < values.length; i++) {
 				value += values[i].text();
