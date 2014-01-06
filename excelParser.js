@@ -137,8 +137,14 @@ function extractData(files) {
 	_.each(cells, function(cell) {
 		var value = cell.value;
 
-		if (cell.type == 's') value = strings.get('//a:si[' + (parseInt(value) + 1) + ']//a:t', ns).text();
-
+		if (cell.type == 's') {
+			values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t', ns)
+			value = "";
+			for (var i = 0; i < values.length; i++) {
+				value += values[i].text();
+			}
+		}
+		
 		data[cell.row - d[0].row][cell.column - d[0].column] = value;
 	});
 
