@@ -17,7 +17,7 @@ function extractFiles(path) {
 		}
 	};
 
-    var noop = function () {};
+  var noop = function () {};
 	
 	var srcStream = path instanceof require('stream') ?
 		path :
@@ -41,8 +41,8 @@ function extractFiles(path) {
 					files[entry.path].deferred.resolve();
 				});
 			} else {
-                entry.on('data', noop); // otherwise unzip.Parse() will hang forever on this entry on some xlsx files
-            }
+        entry.on('data', noop); // otherwise unzip.Parse() will hang forever on this entry on some xlsx files
+      }
 		});
 
 	when(all(_.pluck(files, 'deferred')), function() {
@@ -68,7 +68,7 @@ function calculateDimensions (cells) {
 }
 
 function extractData(files) {
-	try{
+	try {
 		var libxmljs = require('libxmljs'),
 			sheet = libxmljs.parseXml(files['xl/worksheets/sheet1.xml'].contents),
 			strings = libxmljs.parseXml(files['xl/sharedStrings.xml'].contents),
