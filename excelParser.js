@@ -4,21 +4,24 @@ var Promise = require('node-promise'),
 	all = Promise.all,
 	_ = require('underscore');
 
-function extractFiles(path) {
+function extractFiles(path, sheets) {
 	var unzip = require('unzip'),
 		deferred = defer();
 
 	var files = {
-		'xl/worksheets/sheet1.xml': {
-			deferred: defer()
-		},
 		'xl/sharedStrings.xml': {
 			deferred: defer()
 		}
 	};
+    _.each(sheets, function(sheet) {
+        files['xl/worksheets/sheet' + sheet + '.xml'] = {
+            num: sheet,
+            deferred: defer()
+        };
+    });
 
-  var noop = function () {};
-	
+    var noop = function () {};
+
 	var srcStream = path instanceof require('stream') ?
 		path :
 		require('fs').createReadStream(path);
@@ -70,7 +73,15 @@ function calculateDimensions (cells) {
 function extractData(files) {
 	try {
 		var libxmljs = require('libxmljs'),
-			sheet = libxmljs.parseXml(files['xl/worksheets/sheet1.xml'].contents),
+			sheets = _(files).map(function (sheet, key) {
+                if (key === 'xl/sharedStrings.xml') {
+                    return;
+                }
+                return {
+                    num: sheet.num,
+                    xml: libxmljs.parseXml(sheet.contents)
+                };
+            }),
 			strings = libxmljs.parseXml(files['xl/sharedStrings.xml'].contents),
 			ns = {a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'},
 			data = [];
@@ -81,7 +92,7 @@ function extractData(files) {
 	var colToInt = function(col) {
 		var letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
 		col = col.trim().split('');
-		
+
 		var n = 0;
 
 		for (var i = 0; i < col.length; i++) {
@@ -113,47 +124,74 @@ function extractData(files) {
 		this.type = type;
 	};
 
-	var cellNodes = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns);
-	var cells = _(cellNodes).map(function (node) {
-		return new Cell(node);
-	});
+    _(sheets).each(function (sheet) {
+        if (!sheet) {
+            return;
+        }
+        var _data = [];
+        var cellNodes = sheet.xml.find('/a:worksheet/a:sheetData/a:row/a:c', ns);
+        var cells = _(cellNodes).map(function (node) {
+            return new Cell(node);
+        });
 
-	var d = sheet.get('//a:dimension/@ref', ns);
-	if (d) {
-		d = _.map(d.value().split(':'), function(v) { return new CellCoords(v); });
-	} else {
-        d = calculateDimensions(cells)
-	}
+        var d = sheet.xml.get('//a:dimension/@ref', ns);
+        if (d) {
+            d = _.map(d.value().split(':'), function(v) { return new CellCoords(v); });
+        } else {
+            d = calculateDimensions(cells);
+        }
 
-	var cols = d[1].column - d[0].column + 1,
-		rows = d[1].row - d[0].row + 1;
+        var cols = d[1].column - d[0].column + 1,
+            rows = d[1].row - d[0].row + 1;
 
-	_(rows).times(function() {
-		var _row = [];
-		_(cols).times(function() { _row.push(''); });
-		data.push(_row);
-	});
+        _(rows).times(function() {
+            var _row = [];
+            _(cols).times(function() { _row.push(''); });
+            _data.push(_row);
+        });
 
-	_.each(cells, function(cell) {
-		var value = cell.value;
+        _.each(cells, function(cell) {
+            var value = cell.value;
 
-		if (cell.type == 's') {
-			values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t[not(ancestor::a:rPh)]', ns)
-			value = "";
-			for (var i = 0; i < values.length; i++) {
-				value += values[i].text();
-			}
-		}
-		
-		data[cell.row - d[0].row][cell.column - d[0].column] = value;
-	});
+            if (cell.type === 's') {
+                var values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t[not(ancestor::a:rPh)]', ns);
+                value = '';
+                for (var i = 0; i < values.length; i++) {
+                    value += values[i].text();
+                }
+            }
 
-	return data;
+            _data[cell.row - d[0].row][cell.column - d[0].column] = value;
+        });
+
+        data.push({
+            num: sheet.num,
+            contents: _data
+        });
+    });
+
+    return data;
 }
 
-module.exports = function parseXlsx(path, cb) {
-	extractFiles(path).then(function(files) {
-		cb(null, extractData(files));
+module.exports = function parseXlsx() {
+    var path, sheets, cb;
+    var len = arguments.length;
+	if(len === 2) {
+		path = arguments[0];
+		sheets = [1];
+		cb = arguments[1];
+	}
+	if(len === 3) {
+		path = arguments[0];
+		sheets = arguments[1];
+		cb = arguments[2];
+	}
+	extractFiles(path, sheets).then(function(files) {
+        var data = extractData(files);
+        if (len === 2) {
+            return cb(null, data[0] && data[0].contents || []);
+        }
+        cb(null, data);
 	},
 	function(err) {
 		cb(err);
