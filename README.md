@@ -1,4 +1,4 @@
-Excel.js
+Excel.js [![Build Status](https://travis-ci.org/trevordixon/excel.js.svg?branch=master)](https://travis-ci.org/trevordixon/excel.js)
 ========
 
 Native node.js Excel file parser. Only supports xlsx for now.
