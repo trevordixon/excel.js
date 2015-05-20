@@ -15,6 +15,13 @@ Use
       if(err) throw err;
         // data is an array of arrays
     });
+
+If you have multiple sheets in your spreadsheet,
+
+    parseXlsx('Spreadsheet.xlsx', [ 2 ], function(err, data) {
+      if(err) throw err;
+        // data is [ { num: 2, contents: ( an array of array ) } ]
+    });
     
 Test
 =====
