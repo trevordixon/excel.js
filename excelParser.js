@@ -9,12 +9,10 @@ function extractFiles(path) {
 		deferred = defer();
 
 	var files = {
-		'xl/worksheets/sheet1.xml': {
-			deferred: defer()
-		},
 		'xl/sharedStrings.xml': {
 			deferred: defer()
-		}
+		},
+		fileCount: 0
 	};
 
   var noop = function () {};
@@ -32,6 +30,13 @@ function extractFiles(path) {
 			deferred.resolve();
 		})
 		.on('entry', function(entry) {
+
+			if(/xl\/worksheets/.test(entry.path)) {
+				files[entry.path]={ };
+				files[entry.path].deferred = defer();
+				files.fileCount++;
+			}
+
 			if (files[entry.path]) {
 				var contents = '';
 				entry.on('data', function(data) {
@@ -70,7 +75,7 @@ function calculateDimensions (cells) {
 function extractData(files) {
 	try {
 		var libxmljs = require('libxmljs'),
-			sheet = libxmljs.parseXml(files['xl/worksheets/sheet1.xml'].contents),
+		//	sheet = libxmljs.parseXml(files['xl/worksheets/sheet1.xml'].contents),
 			strings = libxmljs.parseXml(files['xl/sharedStrings.xml'].contents),
 			ns = {a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'},
 			data = [];
@@ -113,41 +118,51 @@ function extractData(files) {
 		this.type = type;
 	};
 
-	var cellNodes = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns);
-	var cells = _(cellNodes).map(function (node) {
-		return new Cell(node);
-	});
+	for(var index=0; index<files.fileCount;index++) {
+		var sheet={}
+		var sheetData=[];
+		data.push(sheetData);
 
-	var d = sheet.get('//a:dimension/@ref', ns);
-	if (d) {
-		d = _.map(d.value().split(':'), function(v) { return new CellCoords(v); });
-	} else {
-        d = calculateDimensions(cells)
-	}
+		try {
+			sheet = libxmljs.parseXml(files['xl/worksheets/sheet'+(index+1)+'.xml'].contents);
+		} catch(parseError){
+	   		throw parseError;
+    		}
 
-	var cols = d[1].column - d[0].column + 1,
-		rows = d[1].row - d[0].row + 1;
+		var cellNodes = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns);
+		var cells = _(cellNodes).map(function (node) {
+			return new Cell(node);
+		});
 
-	_(rows).times(function() {
-		var _row = [];
-		_(cols).times(function() { _row.push(''); });
-		data.push(_row);
-	});
-
-	_.each(cells, function(cell) {
-		var value = cell.value;
-
-		if (cell.type == 's') {
-			values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t[not(ancestor::a:rPh)]', ns)
-			value = "";
-			for (var i = 0; i < values.length; i++) {
-				value += values[i].text();
-			}
+		var d = sheet.get('//a:dimension/@ref', ns);
+		if (d) {
+			d = _.map(d.value().split(':'), function(v) { return new CellCoords(v); });
+		} else {
+        		d = calculateDimensions(cells)
 		}
-		
-		data[cell.row - d[0].row][cell.column - d[0].column] = value;
-	});
 
+		var cols = d[1].column - d[0].column + 1,
+			rows = d[1].row - d[0].row + 1;
+
+		_(rows).times(function() {
+			var _row = [];
+			_(cols).times(function() { _row.push(''); });
+			sheetData.push(_row);
+		});
+
+		_.each(cells, function(cell) {
+			var value = cell.value;
+
+			if (cell.type == 's') {
+				values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t[not(ancestor::a:rPh)]', ns)
+				value = "";
+				for (var i = 0; i < values.length; i++) {
+					value += values[i].text();
+				}
+			}
+			sheetData[cell.row - d[0].row][cell.column - d[0].column] = value;
+		});
+	}
 	return data;
 }
 
