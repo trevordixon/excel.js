@@ -145,7 +145,9 @@ function extractData(files) {
 			}
 		}
 		
-		data[cell.row - d[0].row][cell.column - d[0].column] = value;
+		if (data[cell.row - d[0].row]) {
+			data[cell.row - d[0].row][cell.column - d[0].column] = value;
+		}
 	});
 
 	return data;
