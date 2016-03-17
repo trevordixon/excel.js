@@ -5,7 +5,7 @@ var Promise = require('node-promise'),
 	_ = require('underscore');
 
 function extractFiles(path) {
-	var unzip = require('unzip'),
+	var unzip = require('unzip2'),
 		deferred = defer();
 
 	var files = {
