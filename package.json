@@ -1,6 +1,6 @@
 {
   "name": "excel",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Simple NodeJS XLSX parser.",
   "main": "excelParser.js",
   "contributors": [
