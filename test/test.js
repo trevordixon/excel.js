@@ -18,6 +18,12 @@ describe('excel.js', function() {
             done(err);
           });
         })
+        it('should return the right value with the sheet specified', function(done) {
+          parseXlsx(sheetsDir + '/' + filename, '1', function(err, data) {
+            assert.deepEqual(data, expected);
+            done(err);
+          });
+        })
       });
 
     })(filename, sheets[filename]);
