@@ -1,4 +1,4 @@
-Excel.js
+Excel.js [![Build Status](https://travis-ci.org/trevordixon/excel.js.svg?branch=master)](https://travis-ci.org/trevordixon/excel.js)
 ========
 
 Native node.js Excel file parser. Only supports xlsx for now.
@@ -12,7 +12,7 @@ Use
     var parseXlsx = require('excel');
 
     parseXlsx('Spreadsheet.xlsx', function(err, data) {
-    	if(err) throw err;
+      if(err) throw err;
         // data is an array of arrays
     });
     
@@ -23,11 +23,10 @@ If you have multiple sheets in your spreadsheet,
         // data is an array of arrays
     });
     
+Test
+=====
+Run `npm test`
+
 MIT License.
 
-*Author: Trevor Dixon <trevordixon@gmail.com>*
-
-Contributors: 
-- Jake Scott <scott.iroh@gmail.com>
-- Fabian Tollenaar <fabian@startingpoint.nl> (Just a small contribution, really)
-- amakhrov
+**Thanks to [all other contributors](https://github.com/trevordixon/excel.js/graphs/contributors).**

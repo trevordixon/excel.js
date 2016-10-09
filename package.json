@@ -1,21 +1,29 @@
 {
   "name": "excel",
-  "version": "0.0.4",
-  "description": "Web and node.js spreadsheet library. Supports xlsx, csv, tsv (or any simple delimited file) for now.",
+  "version": "0.1.5",
+  "description": "Simple NodeJS XLSX parser.",
   "main": "excelParser.js",
   "contributors": [
-    { "name": "Jake Scott", "email": "scott.iroh@gmail.com" },
-    { "name": "Fabian Tollenaar", "email": "fabian@starting-point.nl" }
+    {
+      "name": "Jake Scott",
+      "email": "scott.iroh@gmail.com"
+    },
+    {
+      "name": "Fabian Tollenaar",
+      "email": "fabian@starting-point.nl"
+    }
   ],
+  "scripts": {
+    "test": "mocha --reporter list"
+  },
   "dependencies": {
     "node-promise": "~0.5.3",
-    "libxmljs": "*",
+    "libxmljs": "~0.18.0",
     "underscore": "~1.3.3",
-    "unzip": "~0.0.3"
+    "unzip2": "0.2.5"
   },
   "devDependencies": {
-    "stencil-js": ">= 0.8.4",
-    "grunt": ">= 0.3.16"
+    "mocha": "~1.17.1"
   },
   "repository": {
     "type": "git",
@@ -23,7 +31,6 @@
   },
   "keywords": [
     "excel",
-    "xls",
     "xlsx"
   ],
   "author": "Trevor Dixon <trevordixon@gmail.com>",
