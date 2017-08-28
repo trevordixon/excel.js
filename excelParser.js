@@ -75,6 +75,7 @@ function extractData(files) {
 			strings = libxmljs.parseXml(files.strings.contents),
 			ns = {a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'},
 			data = [];
+		var values = strings.find('//a:si//a:t[not(ancestor::a:rPh)]', ns);
 	} catch(parseError){
 	   return [];
     	}
@@ -135,15 +136,13 @@ function extractData(files) {
 		data.push(_row);
 	});
 
+	var cell_count = 40;
+
 	_.each(cells, function(cell) {
 		var value = cell.value;
 
 		if (cell.type == 's') {
-			values = strings.find('//a:si[' + (parseInt(value) + 1) + ']//a:t[not(ancestor::a:rPh)]', ns)
-			value = "";
-			for (var i = 0; i < values.length; i++) {
-				value += values[i].text();
-			}
+			value = values[parseInt(value)].text();
 		}
 		
 		if (data[cell.row - d[0].row]) {
