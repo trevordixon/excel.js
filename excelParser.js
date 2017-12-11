@@ -75,7 +75,7 @@ function extractData(files) {
 			strings = libxmljs.parseXml(files.strings.contents),
 			ns = {a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'},
 			data = [];
-		var values = strings.find('//a:si//a:t[not(ancestor::a:rPh)]', ns);
+		var values = strings.find('//a:si', ns).map(string => string.find('.//a:t[not(ancestor::a:rPh)]', ns).map(t => t.text()).join(''));
 	} catch(parseError){
 	   return [];
     	}
@@ -140,7 +140,7 @@ function extractData(files) {
 		var value = cell.value;
 
 		if (cell.type == 's') {
-			value = values[parseInt(value)].text();
+			value = values[parseInt(value)];
 		}
 		
 		if (data[cell.row - d[0].row]) {
