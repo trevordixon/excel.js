@@ -1,6 +1,6 @@
 import fs from 'fs';
 import Stream from 'stream';
-import unzip from 'unzip2';
+import unzip from 'node-unzip-2';
 import libxmljs from 'libxmljs';
 
 function extractFiles(path, sheet) {
@@ -8,7 +8,7 @@ function extractFiles(path, sheet) {
     strings: {},
     sheet: {},
     'xl/sharedStrings.xml': 'strings',
-    ['xl/worksheets/sheet' + sheet + '.xml']: 'sheet'
+    [`xl/worksheets/sheet${sheet}.xml`]: 'sheet'
   };
 
   const stream = path instanceof Stream ? path : fs.createReadStream(path);
@@ -39,9 +39,6 @@ function extractFiles(path, sheet) {
               });
           }));
         } else {
-          // // Consume data from stream.
-          // // otherwise unzip.Parse() will hang forever on this entry on some xlsx files.
-          // entry.on('data', () => {});
           entry.autodrain();
         }
       });

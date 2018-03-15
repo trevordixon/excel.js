@@ -9,18 +9,16 @@ Install
 
 Use
 ====
-    var parseXlsx = require('excel');
+    import parseXlsx from 'excel';
 
-    parseXlsx('Spreadsheet.xlsx', function(err, data) {
-      if(err) throw err;
-        // data is an array of arrays
+    parseXlsx('Spreadsheet.xlsx').then((data) => {
+      // data is an array of arrays
     });
     
 If you have multiple sheets in your spreadsheet, 
 
-    parseXlsx('Spreadsheet.xlsx', '2', function(err, data) {
-    	if(err) throw err;
-        // data is an array of arrays
+    parseXlsx('Spreadsheet.xlsx', '2').then((data) => {
+      // data is an array of arrays
     });
     
 Test

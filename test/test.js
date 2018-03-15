@@ -1,5 +1,13 @@
-var parseXlsx = require('../excelParser');
+var parseExcel = require('../commonjs/excelParser').default;
 var assert = require('assert');
+
+function parseXlsx(path, sheet, callback) {
+  if (typeof callback === 'undefined') {
+    callback = sheet;
+    sheet = '1';
+  }
+  parseExcel(path, sheet).then((data) => callback(null, data), callback);
+}
 
 var sheetsDir = __dirname + '/spreadsheets';
 var sheets = {
