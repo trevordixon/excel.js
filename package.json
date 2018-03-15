@@ -1,6 +1,6 @@
 {
   "name": "excel",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "description": "Simple NodeJS XLSX parser.",
   "main": "excelParser.js",
   "contributors": [
@@ -11,19 +11,25 @@
     {
       "name": "Fabian Tollenaar",
       "email": "fabian@starting-point.nl"
+    },
+    {
+      "name": "Cat Amphetamine",
+      "email": "purecatamphetamine@gmail.com"
     }
   ],
   "scripts": {
-    "test": "mocha --reporter list"
+    "build": "babel ./excelParser.js --out-dir ./commonjs --source-maps",
+    "test": "npm run build && mocha --reporter list test/test.js",
+    "prepublish": "npm run test"
   },
   "dependencies": {
-    "node-promise": "~0.5.3",
-    "libxmljs": "~0.18.0",
-    "underscore": "~1.3.3",
-    "unzip2": "0.2.5"
+    "libxmljs": "^0.18.0",
+    "node-unzip-2": "^0.2.7"
   },
   "devDependencies": {
-    "mocha": "~1.17.1"
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "mocha": "^1.17.1"
   },
   "repository": {
     "type": "git",
