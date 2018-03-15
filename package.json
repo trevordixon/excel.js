@@ -2,7 +2,7 @@
   "name": "excel",
   "version": "0.2.0",
   "description": "Simple NodeJS XLSX parser.",
-  "main": "excelParser.js",
+  "main": "commonjs/excelParser.js",
   "contributors": [
     {
       "name": "Jake Scott",
