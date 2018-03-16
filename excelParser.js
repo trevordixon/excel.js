@@ -1,7 +1,11 @@
 import fs from 'fs';
 import Stream from 'stream';
 import unzip from 'unzipper';
-import libxmljs from 'libxmljs';
+import xpath from 'xpath';
+import XMLDOM from 'xmldom';
+
+const ns = { a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main' };
+const select = xpath.useNamespaces(ns);
 
 function extractFiles(path, sheet) {
   const files = {
@@ -61,17 +65,15 @@ function calculateDimensions (cells) {
 }
 
 function extractData(files) {
-  const ns = { a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main' };
   let sheet;
   let values;
   const data = [];
 
   try {
-    sheet = libxmljs.parseXml(files.sheet.contents);
-    values = libxmljs.parseXml(files.strings.contents)
-      .find('//a:si', ns)
-      .map(string => string.find('.//a:t[not(ancestor::a:rPh)]', ns)
-      .map(t => t.text()).join(''));
+    sheet = new XMLDOM.DOMParser().parseFromString(files.sheet.contents);
+    const valuesDoc = new XMLDOM.DOMParser().parseFromString(files.strings.contents);
+    values = select('//a:si', valuesDoc)
+      .map(string => select('.//a:t[not(ancestor::a:rPh)]', string).map(t => t.textContent).join(''));
   } catch(parseError){
     return [];
   }
@@ -91,8 +93,7 @@ function extractData(files) {
   };
 
   const na = {
-    value: () => '',
-    text: () => ''
+    textContent: ''
   };
 
   class CellCoords {
@@ -105,9 +106,9 @@ function extractData(files) {
 
   class Cell {
     constructor(cellNode) {
-      const r = cellNode.attr('r').value();
-      const type = (cellNode.attr('t') || na).value();
-      const value = (cellNode.get('a:v', ns) || na ).text();
+      const r = cellNode.getAttribute('r');
+      const type = cellNode.getAttribute('t') || '';
+      const value = (select('a:v', cellNode, 1) || na).textContent;
       const coords = new CellCoords(r)
 
       this.column = coords.column;
@@ -117,11 +118,11 @@ function extractData(files) {
     }
   }
 
-  const cells = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns).map(node => new Cell(node));
+  const cells = select('/a:worksheet/a:sheetData/a:row/a:c', sheet).map(node => new Cell(node));
 
-  let d = sheet.get('//a:dimension/@ref', ns);
+  let d = select('//a:dimension/@ref', sheet, 1);
   if (d) {
-    d = d.value().split(':').map(_ => new CellCoords(_));
+    d = d.textContent.split(':').map(_ => new CellCoords(_));
   } else {
     d = calculateDimensions(cells);
   }

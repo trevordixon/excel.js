@@ -13,19 +13,26 @@ var _stream = require('stream');
 
 var _stream2 = _interopRequireDefault(_stream);
 
-var _nodeUnzip = require('node-unzip-2');
+var _unzipper = require('unzipper');
 
-var _nodeUnzip2 = _interopRequireDefault(_nodeUnzip);
+var _unzipper2 = _interopRequireDefault(_unzipper);
 
-var _libxmljs = require('libxmljs');
+var _xpath = require('xpath');
 
-var _libxmljs2 = _interopRequireDefault(_libxmljs);
+var _xpath2 = _interopRequireDefault(_xpath);
+
+var _xmldom = require('xmldom');
+
+var _xmldom2 = _interopRequireDefault(_xmldom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var ns = { a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main' };
+var select = _xpath2.default.useNamespaces(ns);
 
 function extractFiles(path, sheet) {
   var files = _defineProperty({
@@ -39,7 +46,7 @@ function extractFiles(path, sheet) {
   return new Promise(function (resolve, reject) {
     var filePromises = [];
 
-    stream.pipe(_nodeUnzip2.default.Parse()).on('error', reject).on('close', function () {
+    stream.pipe(_unzipper2.default.Parse()).on('error', reject).on('close', function () {
       Promise.all(filePromises).then(function () {
         return resolve(files);
       });
@@ -86,16 +93,16 @@ function calculateDimensions(cells) {
 }
 
 function extractData(files) {
-  var ns = { a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main' };
   var sheet = void 0;
   var values = void 0;
   var data = [];
 
   try {
-    sheet = _libxmljs2.default.parseXml(files.sheet.contents);
-    values = _libxmljs2.default.parseXml(files.strings.contents).find('//a:si', ns).map(function (string) {
-      return string.find('.//a:t[not(ancestor::a:rPh)]', ns).map(function (t) {
-        return t.text();
+    sheet = new _xmldom2.default.DOMParser().parseFromString(files.sheet.contents);
+    var valuesDoc = new _xmldom2.default.DOMParser().parseFromString(files.strings.contents);
+    values = select('//a:si', valuesDoc).map(function (string) {
+      return select('.//a:t[not(ancestor::a:rPh)]', string).map(function (t) {
+        return t.textContent;
       }).join('');
     });
   } catch (parseError) {
@@ -117,12 +124,7 @@ function extractData(files) {
   };
 
   var na = {
-    value: function value() {
-      return '';
-    },
-    text: function text() {
-      return '';
-    }
+    textContent: ''
   };
 
   var CellCoords = function CellCoords(cell) {
@@ -136,9 +138,9 @@ function extractData(files) {
   var Cell = function Cell(cellNode) {
     _classCallCheck(this, Cell);
 
-    var r = cellNode.attr('r').value();
-    var type = (cellNode.attr('t') || na).value();
-    var value = (cellNode.get('a:v', ns) || na).text();
+    var r = cellNode.getAttribute('r');
+    var type = cellNode.getAttribute('t') || '';
+    var value = (select('a:v', cellNode, 1) || na).textContent;
     var coords = new CellCoords(r);
 
     this.column = coords.column;
@@ -147,13 +149,13 @@ function extractData(files) {
     this.type = type;
   };
 
-  var cells = sheet.find('/a:worksheet/a:sheetData/a:row/a:c', ns).map(function (node) {
+  var cells = select('/a:worksheet/a:sheetData/a:row/a:c', sheet).map(function (node) {
     return new Cell(node);
   });
 
-  var d = sheet.get('//a:dimension/@ref', ns);
+  var d = select('//a:dimension/@ref', sheet, 1);
   if (d) {
-    d = d.value().split(':').map(function (_) {
+    d = d.textContent.split(':').map(function (_) {
       return new CellCoords(_);
     });
   } else {
