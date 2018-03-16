@@ -1,6 +1,6 @@
 import fs from 'fs';
 import Stream from 'stream';
-import unzip from 'node-unzip-2';
+import unzip from 'unzipper';
 import libxmljs from 'libxmljs';
 
 function extractFiles(path, sheet) {

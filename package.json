@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "libxmljs": "^0.18.0",
-    "node-unzip-2": "^0.2.7"
+    "unzipper": "^0.8.11"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
