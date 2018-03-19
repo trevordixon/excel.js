@@ -27,12 +27,12 @@ var _xmldom2 = _interopRequireDefault(_xmldom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
 var ns = { a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main' };
 var select = _xpath2.default.useNamespaces(ns);
+
+var letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
 
 function extractFiles(path, sheet) {
   var files = _defineProperty({
@@ -101,63 +101,19 @@ function extractData(files) {
     sheet = new _xmldom2.default.DOMParser().parseFromString(files.sheet.contents);
     var valuesDoc = new _xmldom2.default.DOMParser().parseFromString(files.strings.contents);
     values = select('//a:si', valuesDoc).map(function (string) {
-      return select('.//a:t[not(ancestor::a:rPh)]', string).map(function (t) {
-        return t.textContent;
+      return select('.//a:t[not(ancestor::a:rPh)]', string).map(function (_) {
+        return _.textContent;
       }).join('');
     });
   } catch (parseError) {
     return [];
   }
 
-  function colToInt(col) {
-    var letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-    col = col.trim().split('');
-
-    var n = 0;
-
-    for (var i = 0; i < col.length; i++) {
-      n *= 26;
-      n += letters.indexOf(col[i]);
-    }
-
-    return n;
-  };
-
-  var na = {
-    textContent: ''
-  };
-
-  var CellCoords = function CellCoords(cell) {
-    _classCallCheck(this, CellCoords);
-
-    cell = cell.split(/([0-9]+)/);
-    this.row = parseInt(cell[1]);
-    this.column = colToInt(cell[0]);
-  };
-
-  var Cell = function Cell(cellNode) {
-    _classCallCheck(this, Cell);
-
-    var r = cellNode.getAttribute('r');
-    var type = cellNode.getAttribute('t') || '';
-    var value = (select('a:v', cellNode, 1) || na).textContent;
-    var coords = new CellCoords(r);
-
-    this.column = coords.column;
-    this.row = coords.row;
-    this.value = value;
-    this.type = type;
-  };
-
-  var cells = select('/a:worksheet/a:sheetData/a:row/a:c', sheet).map(function (node) {
-    return new Cell(node);
-  });
+  var cells = select('/a:worksheet/a:sheetData/a:row/a:c', sheet).map(Cell);
 
   var d = select('//a:dimension/@ref', sheet, 1);
   if (d) {
-    d = d.textContent.split(':').map(function (_) {
-      return new CellCoords(_);
-    });
+    d = d.textContent.split(':').map(CellCoords);
   } else {
     d = calculateDimensions(cells);
   }
@@ -183,7 +139,7 @@ function extractData(files) {
 
       var value = cell.value;
 
-      if (cell.type == 's') {
+      if (cell.type === 's') {
         value = values[parseInt(value)];
       }
 
@@ -206,6 +162,54 @@ function extractData(files) {
     }
   }
 
+  if (data.length === 0) {
+    return [];
+  }
+
+  // Trim trailing empty columns.
+  var i = data[0].length - 1;
+  while (i >= 0) {
+    var notEmpty = void 0;
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = data[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var row = _step2.value;
+
+        if (row[i]) {
+          // Column is not empty.
+          notEmpty = true;
+          break;
+        }
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+
+    if (notEmpty) {
+      break;
+    }
+    var j = 0;
+    while (j < data.length) {
+      data[j].splice(i, 1);
+      j++;
+    }
+    i--;
+  }
+
   return data;
 }
 
@@ -223,5 +227,37 @@ function times(n, action) {
     action();
     i++;
   }
+}
+
+function colToInt(col) {
+  col = col.trim().split('');
+
+  var n = 0;
+
+  for (var i = 0; i < col.length; i++) {
+    n *= 26;
+    n += letters.indexOf(col[i]);
+  }
+
+  return n;
+};
+
+function CellCoords(coords) {
+  coords = coords.split(/(\d+)/);
+  return {
+    row: parseInt(coords[1]),
+    column: colToInt(coords[0])
+  };
+}
+
+function Cell(cellNode) {
+  var coords = CellCoords(cellNode.getAttribute('r'));
+  var value = select('a:v', cellNode, 1);
+  return {
+    column: coords.column,
+    row: coords.row,
+    value: value && value.textContent && value.textContent.trim() || '',
+    type: cellNode.getAttribute('t')
+  };
 }
 //# sourceMappingURL=excelParser.js.map

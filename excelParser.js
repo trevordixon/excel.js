@@ -7,6 +7,8 @@ import XMLDOM from 'xmldom';
 const ns = { a: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main' };
 const select = xpath.useNamespaces(ns);
 
+const letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+
 function extractFiles(path, sheet) {
   const files = {
     strings: {},
@@ -73,56 +75,16 @@ function extractData(files) {
     sheet = new XMLDOM.DOMParser().parseFromString(files.sheet.contents);
     const valuesDoc = new XMLDOM.DOMParser().parseFromString(files.strings.contents);
     values = select('//a:si', valuesDoc)
-      .map(string => select('.//a:t[not(ancestor::a:rPh)]', string).map(t => t.textContent).join(''));
+      .map(string => select('.//a:t[not(ancestor::a:rPh)]', string).map(_ => _.textContent).join(''));
   } catch(parseError){
     return [];
   }
 
-  function colToInt(col) {
-    const letters = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
-    col = col.trim().split('');
-
-    let n = 0;
-
-    for (let i = 0; i < col.length; i++) {
-      n *= 26;
-      n += letters.indexOf(col[i]);
-    }
-
-    return n;
-  };
-
-  const na = {
-    textContent: ''
-  };
-
-  class CellCoords {
-    constructor(cell) {
-      cell = cell.split(/([0-9]+)/);
-      this.row = parseInt(cell[1]);
-      this.column = colToInt(cell[0]);
-    }
-  }
-
-  class Cell {
-    constructor(cellNode) {
-      const r = cellNode.getAttribute('r');
-      const type = cellNode.getAttribute('t') || '';
-      const value = (select('a:v', cellNode, 1) || na).textContent;
-      const coords = new CellCoords(r)
-
-      this.column = coords.column;
-      this.row = coords.row;
-      this.value = value;
-      this.type = type;
-    }
-  }
-
-  const cells = select('/a:worksheet/a:sheetData/a:row/a:c', sheet).map(node => new Cell(node));
+  const cells = select('/a:worksheet/a:sheetData/a:row/a:c', sheet).map(Cell);
 
   let d = select('//a:dimension/@ref', sheet, 1);
   if (d) {
-    d = d.textContent.split(':').map(_ => new CellCoords(_));
+    d = d.textContent.split(':').map(CellCoords);
   } else {
     d = calculateDimensions(cells);
   }
@@ -139,13 +101,39 @@ function extractData(files) {
   for (const cell of cells) {
     let value = cell.value;
 
-    if (cell.type == 's') {
+    if (cell.type === 's') {
       value = values[parseInt(value)];
     }
 
     if (data[cell.row - d[0].row]) {
       data[cell.row - d[0].row][cell.column - d[0].column] = value;
     }
+  }
+
+  if (data.length === 0) {
+    return [];
+  }
+
+  // Trim trailing empty columns.
+  let i = data[0].length - 1;
+  while (i >= 0) {
+    let notEmpty;
+    for (const row of data) {
+      if (row[i]) {
+        // Column is not empty.
+        notEmpty = true;
+        break;
+      }
+    }
+    if (notEmpty) {
+      break;
+    }
+    let j = 0;
+    while (j < data.length) {
+      data[j].splice(i, 1);
+      j++;
+    }
+    i--;
   }
 
   return data;
@@ -161,4 +149,36 @@ function times(n, action) {
     action();
     i++;
   }
+}
+
+function colToInt(col) {
+  col = col.trim().split('');
+
+  let n = 0;
+
+  for (let i = 0; i < col.length; i++) {
+    n *= 26;
+    n += letters.indexOf(col[i]);
+  }
+
+  return n;
+};
+
+function CellCoords(coords) {
+  coords = coords.split(/(\d+)/);
+  return {
+    row: parseInt(coords[1]),
+    column: colToInt(coords[0])
+  };
+}
+
+function Cell(cellNode) {
+  const coords = CellCoords(cellNode.getAttribute('r'));
+  const value = select('a:v', cellNode, 1);
+  return {
+    column: coords.column,
+    row: coords.row,
+    value: value && value.textContent && value.textContent.trim() || '',
+    type: cellNode.getAttribute('t')
+  };
 }
