@@ -23,7 +23,6 @@
     "prepublish": "npm run test"
   },
   "dependencies": {
-    "libxmljs": "^0.18.0",
     "unzipper": "^0.8.11",
     "xmldom": "^0.1.27",
     "xpath": "0.0.27"
