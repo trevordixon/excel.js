@@ -58,16 +58,23 @@ function extractFiles(path, sheet) {
     .on('entry', function (entry) {
       var file = files[entry.path];
       if (file) {
-        var contents = '';
-        filePromises.push(new Promise(function (resolve) {
-          entry.on('data', function (data) {
-            return contents += data.toString();
-          }).on('end', function () {
-            files[file].contents = contents;
-            resolve();
-          });
+        //let contents = '';
+        let buffer  = new Buffer("");
+        filePromises.push(new Promise((resolve) => {
+          entry
+            //.on('data', data => contents += data.toString())
+            .on('data', (data) => {
+                buffer = Buffer.concat([buffer,data])
+                //contents += data.toString();
+            })
+            .on('end', () => {
+              //files[file].contents = contents;
+              files[file].contents = buffer.toString();
+              //console.log("extractFiles",entry.path,buffer.length,contents.length,files[file].contents.length)
+              resolve();
+            });
         }));
-      } else {
+    } else {
         entry.autodrain();
       }
     });
