@@ -23,13 +23,9 @@ function extractFiles(path, sheet) {
     stream
       .pipe(unzip.Parse())
       .on('error', reject)
-      .on('close', () => {
+      .on('finish', () => {
         Promise.all(filePromises).then(() => resolve(files));
       })
-      // For some reason `end` event is not emitted.
-      // .on('end', () => {
-      //   Promise.all(filePromises).then(() => resolve(files));
-      // })
       .on('entry', (entry) => {
         const file = files[entry.path];
         if (file) {

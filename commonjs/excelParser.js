@@ -46,16 +46,11 @@ function extractFiles(path, sheet) {
   return new Promise(function (resolve, reject) {
     var filePromises = [];
 
-    stream.pipe(_unzipper2.default.Parse()).on('error', reject).on('close', function () {
+    stream.pipe(_unzipper2.default.Parse()).on('error', reject).on('finish', function () {
       Promise.all(filePromises).then(function () {
         return resolve(files);
       });
-    })
-    // For some reason `end` event is not emitted.
-    // .on('end', () => {
-    //   Promise.all(filePromises).then(() => resolve(files));
-    // })
-    .on('entry', function (entry) {
+    }).on('entry', function (entry) {
       var file = files[entry.path];
       if (file) {
         var contents = '';
