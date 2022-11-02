@@ -30,7 +30,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
-    "mocha": "^1.17.1"
+    "mocha": "^10.1.0"
   },
   "repository": {
     "type": "git",
